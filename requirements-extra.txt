@@ -1,0 +1,8 @@
+numpy>=1.23.0,<2.0
+timm==1.0.24
+einops==0.8.2
+sympy
+packaging
+ninja
+wheel
+setuptools>=70.0.0

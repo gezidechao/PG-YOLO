@@ -179,3 +179,24 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Private datasets and experiment outputs
+/datasets/
+/runs/
+/weights/
+/outputs/
+/logs/
+
+# Model weights and exported models
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+
+# Local compiled extensions and caches
+*.so
+*.pyd
+*.dll
+__pycache__/
+*.pyc
