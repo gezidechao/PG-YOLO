@@ -1,117 +1,51 @@
 # PG-YOLO
 
-语义先验引导的混凝土桥梁表观病害检测方法。
+语义先验引导的混凝土桥梁表观病害检测方法。本仓库提供模型源码及论文公开数据集实验的复现步骤。
 
-本次发布提供 PG-YOLO 的核心模块、模型结构配置、训练参数参考及必要的先验输入资源。
-
-## 1. 核心模块
-
-本项目基于 Ultralytics YOLO 框架实现。
-
-| 论文模块名称 | 源码位置 | 代码中的名称 |
+| 模块 | 源码位置 | 实现名称 |
 | --- | --- | --- |
-| PG-GRAM | ultralytics/nn/modules/rram.py | RRAM |
-| LGC-VSSBlock | ultralytics/nn/modules/vmamba.py | VSSBlock |
-| DSA-AFF | ultralytics/nn/tasks.py | MCS_AFF |
+| `PG-GRAM` | `ultralytics/nn/modules/rram.py` | `RRAM` |
+| `LGC-VSSBlock` | `ultralytics/nn/modules/vmamba.py` | `VSSBlock` |
+| `DSA-AFF` | `ultralytics/nn/tasks.py` | `MCS_AFF` |
 
-代码保留了开发阶段使用的类名。
+## 安装
 
-模块注册和模型解析代码包含在本仓库的 ultralytics 源码中。
+在 Linux 的 NVIDIA GPU 环境下运行。请先安装支持 CUDA 的 PyTorch、torchvision，以及与 PyTorch 兼容的 CUDA Toolkit（含 `nvcc`）和 C++ 编译工具。以下命令在仓库根目录运行。
 
-## 2. 文件说明
-
-- ultralytics/：框架与自定义模块源码。
-
-- configs/model_self.yaml：PG-YOLO 模型结构配置。
-
-- configs/train_self.yaml：原训练参数参考。
-
-- priors/self/A_hat.npy：模型使用的类别先验矩阵。
-
-- priors/self/V.npy：模型使用的类别词向量。
-
-- third_party/selective_scan/：Selective Scan CUDA 扩展源码。
-
-- third_party/VMamba_LICENSE：相关第三方许可证。
-
-- pyproject.toml：框架安装配置与依赖。
-
-- requirements-extra.txt：自定义模块的补充依赖。
-
-- LICENSE：原框架许可证。
-
-先验资源不包含数据集图片及逐实例标注。
-
-训练参数文件中的数据路径、输出路径和设备编号为原运行环境设置，
-
-实际使用时应根据自己的环境调整。
-
-## 3. 环境说明
-
-自定义 CUDA 算子使用 Linux、NVIDIA GPU 和 CUDA 工具链。
-
-使用者应准备相互兼容的 PyTorch、torchvision 和 CUDA 编译环境。
-
-框架依赖见 pyproject.toml，补充依赖见 requirements-extra.txt。
-
-请使用本仓库提供的框架源码，以加载自定义模块。
-
-Selective Scan 扩展的构建入口为：
-
-third_party/selective_scan/setup.py
-
-编译生成的 selective_scan_cuda_oflex 扩展应放置于：
-
-ultralytics/nn/modules/selective_scan_pkg/
-
-## 4. 模型配置
-
-从仓库根目录使用 configs/model_self.yaml。
-
-其中的先验路径指向仓库内的 priors/self/。
-
-完成依赖安装与 CUDA 扩展编译后，可使用框架接口加载模型：
-
-```python
-
-from ultralytics import YOLO
-
-model = YOLO("configs/model_self.yaml")
-
+```bash
+python -m pip install -e . -r requirements-extra.txt -r reproduce/new_ok2/requirements.txt
+(cd third_party/selective_scan && python setup.py build_ext --inplace)
+cp third_party/selective_scan/selective_scan_cuda_oflex*.so ultralytics/nn/modules/selective_scan_pkg/
+python -c "from ultralytics import YOLO; print('PG-YOLO import OK')"
 ```
 
-该配置包含5个病害类别，编号如下：
+## 公开数据集
 
-| 编号 | 类别 |
-| --- | --- |
-| 0 | corrosion（水侵蚀） |
-| 1 | hole（孔洞） |
-| 2 | rebar（露筋） |
-| 3 | spall（剥落） |
-| 4 | speckle（麻面） |
+从本仓库的 [Releases](https://github.com/gezidechao/PG-YOLO/releases) 下载 `new_OK2-v5.zip`，解压到仓库根目录下的 `datasets/`。解压后，数据配置文件应位于 `datasets/new_OK2/data.yaml`。原实验划分为训练集 3,922 张、验证集 489 张和测试集 491 张。训练集用于训练，验证集用于模型选择和检测指标统计，测试集用于可视化。
 
-## 5. 数据与实验材料
+数据来自 Roboflow Universe（2026 年 4 月 2 日导出，[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)）。本文将原复合标签中的露筋与剥落分别标注，并将剥落归入原剥落类。类别编号为 `0 mold`、`1 spall`、`2 potholes`、`3 road bleeding`、`4 rebar`。
 
-本仓库不公开提供数据集图片及相应标注下载，
+## 复现 PG-YOLO
 
-也不包含实验权重、训练结果和完整实验复现材料。
+公开集模型配置、训练参数、先验和实例级 Copy-Paste 实现均位于 `reproduce/new_ok2/`。训练从随机初始化开始，最多 300 轮，训练批量大小为 8，输入为 1024 × 1024 像素，预热 5 轮。训练用实例级 Copy-Paste，关闭 Mixup。
 
-数据集及相关标注可根据合理请求联系论文通信作者申请获取，
+从仓库根目录启动训练。
 
-具体使用应遵守相应数据来源和授权要求。
+```bash
+python reproduce/new_ok2/run.py train --device 0
+```
 
-如需进一步的实验材料，可联系作者。
+训练结束时自动在验证集上评估最佳权重，并输出 P、R、mAP 和 F1。首次运行的最佳权重位于 `runs/public/pg_yolo_new_OK2/weights/best.pt`。以下命令可对该权重重新验证和统计效率。
 
-## 6. 许可证与致谢
+```bash
+python reproduce/new_ok2/run.py val --device 0 --weights runs/public/pg_yolo_new_OK2/weights/best.pt
+python reproduce/new_ok2/run.py benchmark --device 0 --weights runs/public/pg_yolo_new_OK2/weights/best.pt
+```
 
-本项目基于 Ultralytics 框架开发，
+数据放在其他目录时，给训练或验证命令加 `--data /path/to/new_OK2/data.yaml`。已有同名运行时，请将示例中的权重路径换成该次运行实际保存的位置。
 
-保留其 AGPL-3.0 许可证及源码版权声明。
+FPS 测量使用 1024 × 1024 输入、FP32、批量大小 1 及未融合模型。输入预先置于 GPU，预热 100 次后，每次对连续 500 次网络前向推理进行同步计时，取重复测量的 FPS 中位数。数据读取、预处理与后处理均不计入。参数量按模型统计，FLOPs 使用 fvcore 估算，乘加按 2 次浮点运算计，并补充注意力与选择性扫描算子的计数规则。
 
-Selective Scan 相关代码来自 VMamba/Mamba 相关实现，
+## 许可证
 
-保留其源码声明和附带许可证。
-
-类别词向量资源基于 GloVe。
-
-感谢相关开源项目。
+本项目基于 Ultralytics 框架开发，保留原有 AGPL-3.0 许可证及版权声明。Selective Scan 的源码与相关许可证见 `third_party/`。类别词向量基于 GloVe。自建数据集的获取方式见论文。
