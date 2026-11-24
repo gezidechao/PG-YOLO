@@ -21,7 +21,7 @@ python -c "from ultralytics import YOLO; print('PG-YOLO import OK')"
 
 ## 公开数据集
 
-从本仓库的 [Releases](https://github.com/gezidechao/PG-YOLO/releases) 下载 `new_OK2-v5.zip`，解压到仓库根目录下的 `datasets/`。解压后，数据配置文件应位于 `datasets/new_OK2/data.yaml`。原实验划分为训练集 3,922 张、验证集 489 张和测试集 491 张。训练集用于训练，验证集用于模型选择和检测指标统计，测试集用于可视化。
+从本仓库的 [Releases](https://github.com/gezidechao/PG-YOLO/releases) 下载 `PG-YOLO-Public-Bridge-Damage.zip`，解压到仓库根目录下的 `datasets/`。解压后，数据配置文件应位于 `datasets/new_OK2/data.yaml`。原实验划分为训练集 3,922 张、验证集 489 张和测试集 491 张。训练集用于训练，验证集用于模型选择和检测指标统计，测试集用于可视化。
 
 数据来自 Roboflow Universe（2026 年 4 月 2 日导出，[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)）。本文将原复合标签中的露筋与剥落分别标注，并将剥落归入原剥落类。类别编号为 `0 mold`、`1 spall`、`2 potholes`、`3 road bleeding`、`4 rebar`。
 
